@@ -1,0 +1,24 @@
+# Blender MTL File: 'mountain.blend'
+# Material Count: 2
+
+newmtl gray
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.419608 0.419608 0.419608
+Ks 0.330000 0.330000 0.330000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd ../../Floor/skybox_bottom2.jpg
+
+newmtl green
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.341176 0.517647 0.278431
+Ks 0.330000 0.330000 0.330000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd ../../Floor/skybox_bottom.jpg

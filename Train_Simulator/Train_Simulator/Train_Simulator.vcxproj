@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>../../libs/freeglut/include;../../libs/glm;../../libs/glfw-3.3.4/include/GLFW;../../libs/glew-2.1.0/include;$(IncludePath)</IncludePath>
-    <LibraryPath>../../libs/freeglut/lib/x64;../../libs/glfw-3.3.4/lib-vc2022;../../libs/glew-2.1.0/lib/Release/x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../_external/freeglut/include;../../_external/glm;../../_external/Assimp.3.0.0/build/native/include;../../_external/stb-master;../../_external/glfw-3.3.4/include/GLFW;../../_external/glew-2.1.0/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../_external/freeglut/lib/x64;../../_external/glfw-3.3.4/lib-vc2022;../../_external/glew-2.1.0/lib/Release/x64;../../_external/Assimp.3.0.0/build/native/lib/x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,6 +112,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>../../_external/Assimp.3.0.0/build/native/lib/x64/assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,17 +133,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Position.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="Train_Simulator.cpp" />
-    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="MoveableObject.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Object.h" />
-    <ClInclude Include="Position.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="Transform.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="MoveableObject.h" />
+    <ClInclude Include="Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ModelShader.fs" />
+    <None Include="ModelShader.vs" />
+    <None Include="ShadowMapping.fs" />
+    <None Include="ShadowMapping.vs" />
+    <None Include="ShadowMappingDepth.fs" />
+    <None Include="ShadowMappingDepth.vs" />
+    <None Include="skybox.fs" />
+    <None Include="skybox.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
