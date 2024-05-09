@@ -30,7 +30,7 @@
 
 const unsigned int SCR_WIDTH = 1800;
 const unsigned int SCR_HEIGHT = 1080;
-bool isDayTime = false;
+bool isDayTime = true;
 
 
 Camera* pCamera = nullptr;
@@ -373,11 +373,12 @@ int main(int argc, char** argv)
 
     currentObject = &trainVehicle;
 
+    Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
 	Model trainStation("Assets\\Models\\TrainStation\\milwaukeeroaddepot.obj");
+    Model trainTrack("Assets\\tracks_obj\\rail_straight.obj");
+
 	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 20.0f));
     trainStationObject.SetRotation(90);
-    
-    Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
 
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
     
@@ -451,6 +452,7 @@ int main(int argc, char** argv)
             renderModel(shadowMappingDepthShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i]);
         }
 
+
         glCullFace(GL_BACK);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -483,6 +485,9 @@ int main(int argc, char** argv)
         {
             renderModel(ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i]);
         }
+
+        renderModel(ModelShader, trainTrack, glm::vec3(0.0f, -1.55f, -20.0f), 0.0f, glm::vec3(0.7f));
+
 
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f); // White light
         glm::vec3 lightDir = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)); // Example direction
