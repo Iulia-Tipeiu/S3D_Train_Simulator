@@ -127,17 +127,6 @@ unsigned int skyboxIndices[] =
     6,2,3
 };
 
-
-
-std::vector<glm::vec3> trainPositions =
-{
-    glm::vec3(5.0f, -1.55f, 10.0f),
-    glm::vec3(-5.0f, -1.55f, 10.5f),
-    glm::vec3(10.0f, -1.55f, 20.0f),
-    glm::vec3(-10.0f, -1.55f, 20.0f),
-    glm::vec3(0.0f, -1.55f, 20.0f)
-};
-
 Model trainModel;
 
 MoveableObject trainVehicle;
@@ -377,6 +366,7 @@ int main(int argc, char** argv)
     }
 
     trainModel = Model("Assets\\Models\\Train\\2te116.obj");
+    
     trainVehicle = MoveableObject(trainModel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 0.0f));
 
     currentObject = &trainVehicle;
