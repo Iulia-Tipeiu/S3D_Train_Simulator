@@ -243,8 +243,6 @@ int main(int argc, char** argv)
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    
-
     glEnable(GL_DEPTH_TEST);
 
     // build and compile shaders
@@ -253,6 +251,7 @@ int main(int argc, char** argv)
     Shader shadowMappingDepthShader("ShadowMappingDepth.vs", "ShadowMappingDepth.fs");
     Shader ModelShader("ModelShader.vs", "ModelShader.fs");
     Shader skyboxShader("skybox.vs", "skybox.fs");
+    Shader textShader("text.vs", "text.fs");
 
     // load textures
     // -------------
@@ -393,10 +392,17 @@ int main(int argc, char** argv)
     
 
     gameRunning = true;
+
+    // get screen refresh rate
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    int refreshRate = mode->refreshRate;
+
+    int frameCount = 0;
+    
+    
     // run the day night thread
     std::thread dayNightThread(process_day_night);
-
-    
 
     while (!glfwWindowShouldClose(window))
     {
@@ -414,6 +420,17 @@ int main(int argc, char** argv)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        float fps = 1.0f / deltaTime;
+
+        if (frameCount % (refreshRate/2) == 0)
+        {
+			//set window title
+            std::string title = "TrainSim | FPS: " + std::to_string(fps);
+            glfwSetWindowTitle(window, title.c_str());
+            frameCount = 0;
+		}
+        frameCount++;
+
         // input
         // -----
         processInput(window);
@@ -422,6 +439,8 @@ int main(int argc, char** argv)
         // ------
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        
 
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
@@ -640,17 +659,12 @@ void process_day_night()
     {
         if (isDayTime)
         {
-            std::cout << "Blend Factor: " << blendFactor << std::endl;
-            std::cout << "Ambient Factor: " << ambientFactor << std::endl;
-
             blendNight();
             if(blendFactor > 0.9f)
 				isDayTime = false;
         }
         else
         {
-            std::cout << "Blend Factor: " << blendFactor << std::endl;
-            std::cout << "Ambient Factor: " << ambientFactor << std::endl;
 
             blendDay();
             if (blendFactor < 0.1f)
@@ -663,29 +677,8 @@ void process_day_night()
 }
 
 
-
-
 void processInput(GLFWwindow* window)
 {
-    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-    {
-        blendFactor = std::min(blendFactor + 0.001, 1.0);
-        ambientFactor = std::max(ambientFactor - 0.001, 0.34);
-
-        std::cout << "Blend Factor: " << blendFactor << std::endl;
-        std::cout << "Ambient Factor: " << ambientFactor << std::endl;
-
-    }
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-    {
-        blendFactor = std::max(blendFactor - 0.001, 0.0);
-        ambientFactor = std::min(ambientFactor + 0.001, 0.9);
-
-        std::cout << "Blend Factor: " << blendFactor << std::endl;
-        std::cout << "Ambient Factor: " << ambientFactor << std::endl;
-    }
-
-
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
