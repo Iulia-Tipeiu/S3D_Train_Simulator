@@ -37,6 +37,9 @@ const unsigned int SCR_HEIGHT = 1080;
 bool isDayTime = true;
 bool gameRunning = false;
 
+// The amount of ms between light changes
+const unsigned int DAY_NIGHT_CYCLE_SPEED_MS = 20; // lower = faster
+
 
 Camera* pCamera = nullptr;
 bool freeCameraView = true;
@@ -654,7 +657,7 @@ void process_day_night()
 				isDayTime = true;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(DAY_NIGHT_CYCLE_SPEED_MS));
     }
 
 }
