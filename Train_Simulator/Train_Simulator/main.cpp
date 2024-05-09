@@ -234,6 +234,7 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
 
+
     // build and compile shaders
     // -------------------------
     Shader shadowMappingShader("ShadowMapping.vs", "ShadowMapping.fs");
@@ -379,16 +380,18 @@ int main(int argc, char** argv)
     trainStationObject.SetRotation(90);
 
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
-    
 
-    gameRunning = true;
-
-    // get screen refresh rate
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     int refreshRate = mode->refreshRate;
 
+    gameRunning = true;
+
     int frameCount = 0;
+
+    // start in fullscreen
+
+    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     
     
     // run the day night thread
@@ -666,7 +669,7 @@ void process_day_night()
 
 }
 
-
+float speedFactor = 1.0f;
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -674,19 +677,25 @@ void processInput(GLFWwindow* window)
 
 
 #ifdef _DEBUG
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        speedFactor = 5.0f;
+    else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+		speedFactor = 1.0f;
+
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(LEFT, (float)deltaTime);
+        pCamera->ProcessKeyboard(LEFT, (float)deltaTime*speedFactor);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(RIGHT, (float)deltaTime);
+        pCamera->ProcessKeyboard(RIGHT, (float)deltaTime * speedFactor);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(FORWARD, (float)deltaTime);
+        pCamera->ProcessKeyboard(FORWARD, (float)deltaTime * speedFactor);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(BACKWARD, (float)deltaTime);
+        pCamera->ProcessKeyboard(BACKWARD, (float)deltaTime * speedFactor);
     if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(UP, (float)deltaTime);
+        pCamera->ProcessKeyboard(UP, (float)deltaTime * speedFactor);
     if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(DOWN, (float)deltaTime);
+        pCamera->ProcessKeyboard(DOWN, (float)deltaTime * speedFactor);
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {
