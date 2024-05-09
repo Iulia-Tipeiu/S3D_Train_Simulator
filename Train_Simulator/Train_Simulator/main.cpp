@@ -17,6 +17,9 @@
 
 #include <vector>
 
+#include <chrono>
+#include <thread>
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "Camera.h"
@@ -28,9 +31,11 @@
 #pragma comment (lib, "glew32.lib")
 #pragma comment (lib, "OpenGL32.lib")
 
-const unsigned int SCR_WIDTH = 1800;
+
+const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 bool isDayTime = true;
+bool gameRunning = false;
 
 
 Camera* pCamera = nullptr;
@@ -83,6 +88,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
+void process_day_night();
 
 void renderScene(const Shader& shader);
 void renderFloor();
@@ -382,6 +388,13 @@ int main(int argc, char** argv)
 
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
     
+
+    gameRunning = true;
+    // run the day night thread
+    std::thread dayNightThread(process_day_night);
+
+    
+
     while (!glfwWindowShouldClose(window))
     {
 
@@ -527,6 +540,8 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
+    gameRunning = false;
+    dayNightThread.join();
     delete pCamera;
     glfwTerminate();
     return 0;
@@ -603,30 +618,76 @@ void renderModel(Shader& ourShader, Model& ourModel, const glm::vec3& position, 
 }
 
 
+void blendNight()
+{
+    blendFactor = std::min(blendFactor + 0.001, 1.0);
+    ambientFactor = std::max(ambientFactor - 0.001, 0.34);
+}
+
+void blendDay()
+{
+    blendFactor = std::max(blendFactor - 0.001, 0.0);
+    ambientFactor = std::min(ambientFactor + 0.001, 0.9);
+
+}
+
+void process_day_night()
+{
+    while (gameRunning)
+    {
+        if (isDayTime)
+        {
+            std::cout << "Blend Factor: " << blendFactor << std::endl;
+            std::cout << "Ambient Factor: " << ambientFactor << std::endl;
+
+            blendNight();
+            if(blendFactor > 0.9f)
+				isDayTime = false;
+        }
+        else
+        {
+            std::cout << "Blend Factor: " << blendFactor << std::endl;
+            std::cout << "Ambient Factor: " << ambientFactor << std::endl;
+
+            blendDay();
+            if (blendFactor < 0.1f)
+				isDayTime = true;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+}
+
+
+
+
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
     {
         blendFactor = std::min(blendFactor + 0.001, 1.0);
         ambientFactor = std::max(ambientFactor - 0.001, 0.34);
+
+        std::cout << "Blend Factor: " << blendFactor << std::endl;
+        std::cout << "Ambient Factor: " << ambientFactor << std::endl;
+
     }
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
     {
         blendFactor = std::max(blendFactor - 0.001, 0.0);
         ambientFactor = std::min(ambientFactor + 0.001, 0.9);
+
+        std::cout << "Blend Factor: " << blendFactor << std::endl;
+        std::cout << "Ambient Factor: " << ambientFactor << std::endl;
     }
+
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
 
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-    {
-        freeCameraView = true;
-        pCamera->Reset(SCR_WIDTH, SCR_HEIGHT);
-        pCamera->SetFreeCamera(true);
-    }
-
-
+#ifdef _DEBUG
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         pCamera->ProcessKeyboard(LEFT, (float)deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -648,6 +709,10 @@ void processInput(GLFWwindow* window)
         pCamera->Reset(width, height);
 
     }
+#endif // DEBUG
+
+
+
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
