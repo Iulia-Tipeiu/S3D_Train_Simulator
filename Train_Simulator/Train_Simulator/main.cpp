@@ -234,7 +234,7 @@ int main(int argc, char** argv)
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, 7.0f, 25.0f));
+    
 
     glEnable(GL_DEPTH_TEST);
 
@@ -247,7 +247,7 @@ int main(int argc, char** argv)
 
     // load textures
     // -------------
-    unsigned int floorTexture = CreateTexture("Assets\\Floor\\skybox_bottom2.jpg");
+    unsigned int floorTexture = CreateTexture("Assets\\grass.jpg");
 
     // configure depth map FBO
     // -----------------------
@@ -374,7 +374,13 @@ int main(int argc, char** argv)
     currentObject = &trainVehicle;
 
     Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
+	Model trainStation("Assets\\Models\\TrainStation\\milwaukeeroaddepot.obj");
 
+	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 20.0f));
+    trainStationObject.SetRotation(90);
+
+    pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
+    
     while (!glfwWindowShouldClose(window))
     {
 
@@ -435,6 +441,8 @@ int main(int argc, char** argv)
 
         renderModel(shadowMappingDepthShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
 
+        
+
         float mountainRotation = 0.0f;
         glm::vec3 mountainScale = glm::vec3(0.1f);
 
@@ -470,7 +478,7 @@ int main(int argc, char** argv)
         renderScene(shadowMappingShader);
 
         renderModel(ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
-
+		renderModel(ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
             renderModel(ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i]);
