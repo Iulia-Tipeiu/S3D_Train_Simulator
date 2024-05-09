@@ -373,11 +373,11 @@ int main(int argc, char** argv)
 
     currentObject = &trainVehicle;
 
-    Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
 	Model trainStation("Assets\\Models\\TrainStation\\milwaukeeroaddepot.obj");
-
 	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 20.0f));
     trainStationObject.SetRotation(90);
+    
+    Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
 
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
     
