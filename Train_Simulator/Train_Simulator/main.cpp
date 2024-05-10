@@ -245,7 +245,7 @@ int main(int argc, char** argv)
 
     // load textures
     // -------------
-    unsigned int floorTexture = CreateTexture("Assets\\grass.jpg");
+    unsigned int floorTexture = CreateTexture("Assets\\grass1.jpg");
 
     // configure depth map FBO
     // -----------------------
