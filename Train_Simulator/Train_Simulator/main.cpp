@@ -374,7 +374,7 @@ int main(int argc, char** argv)
 
     Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
 	Model trainStation("Assets\\Models\\TrainStation\\milwaukeeroaddepot.obj");
-    Model trainTrack("Assets\\tracks_obj\\rail_straight.obj");
+    Model trainTrack("Assets\\tracks_obj\\RailStraigh.obj");
 
 	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 20.0f));
     trainStationObject.SetRotation(90);
@@ -469,8 +469,7 @@ int main(int argc, char** argv)
         glm::vec3 trainScale = glm::vec3(0.5f);
 
         renderModel(shadowMappingDepthShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
-
-        
+        renderModel(shadowMappingDepthShader, trainTrack, glm::vec3(0.0f, -1.55f, -20.0f), 0.0f, glm::vec3(0.7f));
 
         float mountainRotation = 0.0f;
         glm::vec3 mountainScale = glm::vec3(0.1f);
