@@ -175,7 +175,7 @@ std::vector<glm::vec3> mountainsScales =
 };
 
 
-std::vector<std::string> facesDay
+const std::vector<std::string> facesDay
 {
     ".\\Assets\\skybox_images\\skybox_right.jpg",
     ".\\Assets\\skybox_images\\skybox_left.jpg",
@@ -185,7 +185,7 @@ std::vector<std::string> facesDay
     ".\\Assets\\skybox_images\\skybox_front.jpg"
 };
 
-std::vector<std::string>facesNight
+const std::vector<std::string>facesNight
 {
 
     ".\\Assets\\skybox_images_night\\skybox_night_front.jpg",
@@ -391,7 +391,7 @@ int main(int argc, char** argv)
 
     // start in fullscreen
 
-    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    //glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     
     
     // run the day night thread
