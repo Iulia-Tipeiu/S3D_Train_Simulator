@@ -60,6 +60,8 @@ public:
 
     bool GetFreeCamera();
 
+	void LookAt(glm::vec3 target);
+
 private:
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
 

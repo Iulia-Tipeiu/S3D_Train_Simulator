@@ -36,6 +36,7 @@ const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 bool isDayTime = true;
 bool gameRunning = false;
+bool movementAllowed = false;
 
 enum railType {
     STRAIGHT,
@@ -54,7 +55,7 @@ struct rail {
 
 // The amount of ms between light changes
 const unsigned int DAY_NIGHT_CYCLE_SPEED_MS = 20; // lower = faster
-const float TRAIN_SPEED = 0.5f;
+const float TRAIN_SPEED = 4.0f;
 const float CAMERA_SPEED = 5.0f;
 
 glm::vec3 trainScale = glm::vec3(1.0f);
@@ -62,7 +63,6 @@ glm::vec3 mountainScale = glm::vec3(.7f);
 glm::vec3 railsScale = glm::vec3(0.5f);
 
 Camera* pCamera = nullptr;
-bool freeCameraView = true;
 
 MoveableObject* currentObject;
 
@@ -112,6 +112,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
 void process_day_night();
+void Start();
 void Update();
 
 void renderScene(const Shader& shader);
@@ -471,7 +472,8 @@ int main(int argc, char** argv)
 
     //glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     
-    
+	Start();
+
     // run the day night thread
     std::thread dayNightThread(process_day_night);
 
@@ -642,6 +644,8 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+		movementAllowed = true;
     }
 
     gameRunning = false;
@@ -766,25 +770,31 @@ void processInput(GLFWwindow* window)
 
 
 #ifdef _DEBUG
+    if (pCamera->GetFreeCamera())
+    {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            speedFactor = CAMERA_SPEED;
+        else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+            speedFactor = 1.0f;
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        speedFactor = CAMERA_SPEED;
-    else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-		speedFactor = 1.0f;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            pCamera->ProcessKeyboard(LEFT, (float)deltaTime * speedFactor);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            pCamera->ProcessKeyboard(RIGHT, (float)deltaTime * speedFactor);
 
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(LEFT, (float)deltaTime * speedFactor);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(RIGHT, (float)deltaTime * speedFactor);
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            pCamera->ProcessKeyboard(FORWARD, (float)deltaTime * speedFactor);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            pCamera->ProcessKeyboard(BACKWARD, (float)deltaTime * speedFactor);
+        if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+            pCamera->ProcessKeyboard(UP, (float)deltaTime * speedFactor);
+        if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+            pCamera->ProcessKeyboard(DOWN, (float)deltaTime * speedFactor);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(FORWARD, (float)deltaTime * speedFactor);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(BACKWARD, (float)deltaTime * speedFactor);
-    if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(UP, (float)deltaTime * speedFactor);
-    if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
-        pCamera->ProcessKeyboard(DOWN, (float)deltaTime * speedFactor);
+		//if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		//	pCamera->LookAt(trainVehicle.GetPosition(), trainVehicle.GetRotation());
+    }
+
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {
@@ -806,23 +816,42 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    if (freeCameraView)
+    if (pCamera->GetFreeCamera())
         pCamera->MouseControl((float)xpos, (float)ypos);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yOffset)
 {
-    if (freeCameraView)
+    if (pCamera->GetFreeCamera())
         pCamera->ProcessMouseScroll((float)yOffset);
 }
 
+/// <summary>
+/// This is called before the first frame update
+/// </summary>
+void Start()
+{
+    //prepare train
+    
+    trainVehicle.Set(SCR_WIDTH, SCR_HEIGHT, rails[0].position);
 
+    // prepare camera
+    pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
+	pCamera->LookAt(trainVehicle.GetForward());
+}
+
+int railIndex = 1;
+
+
+/// <summary>
+/// This is called once per frame
+/// </summary>
 void Update()
 {
-	float velocity = (float)(TRAIN_SPEED * deltaTime);
-
-	glm::vec3 trainPosition = trainVehicle.GetPosition();
-	trainPosition.z += velocity;
-
-	trainVehicle.Set(SCR_WIDTH, SCR_HEIGHT, trainPosition);
+    if (!movementAllowed) return;
+    if (trainVehicle.MoveTo(rails[railIndex].position, rails[railIndex].rotation, deltaTime * TRAIN_SPEED))
+    {
+        railIndex++;
+		std::cout << "Next rail: " << railIndex << std::endl;
+    }
 }

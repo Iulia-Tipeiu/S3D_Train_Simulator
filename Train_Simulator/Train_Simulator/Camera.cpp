@@ -184,3 +184,13 @@ bool Camera::GetFreeCamera()
 {
     return this->freeCamera;
 }
+
+void Camera::LookAt(glm::vec3 target)
+{
+	glm::vec3 direction = glm::normalize(target - position);
+	float yaw = glm::degrees(atan2(direction.z, direction.x));
+	float pitch = glm::degrees(asin(direction.y));
+	this->yaw = yaw;
+	this->pitch = pitch;
+	UpdateCameraVectors();
+}

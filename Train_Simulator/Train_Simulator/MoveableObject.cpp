@@ -106,6 +106,60 @@ float MoveableObject::GetYaw()
     return yaw;
 }
 
+void MoveableObject::MoveForward(float speed)
+{
+	position += forward * speed;
+}
+
+bool MoveableObject::MoveTo(glm::vec3 targetPosition, float targetRotationAngle, float speed)
+{
+	// return true when it reach the target position
+	if (IsCloseToTarget(targetPosition))
+	{
+		return true;
+	}
+	else
+	{
+		// move to the target position
+		if (position != targetPosition)
+		{
+			glm::vec3 direction = glm::normalize(targetPosition - position);
+			position += direction * speed;
+
+            LookAt(targetPosition, speed);
+		}
+
+
+		
+		// rotate to the target angle
+		//if (rotation != targetRotationAngle)
+		//{
+		//	if (rotation < targetRotationAngle)
+		//	{
+		//		rotation += 10.5f;
+		//		yaw += 10.5f;
+		//	}
+		//	else
+		//	{
+		//		rotation -= 10.5f;
+		//		yaw -= 10.5f;
+		//	}
+		//	UpdateObjectVectors();
+		//}
+		return false;
+	}
+}
+
+void MoveableObject::LookAt(glm::vec3 targetPosition, float speed)
+{
+	glm::vec3 direction = glm::normalize(targetPosition - position);
+	float angle = glm::degrees(atan2(direction.x, direction.z));
+	rotation = angle;
+	yaw = angle;
+	UpdateObjectVectors();
+
+}
+
 void MoveableObject::UpdateObjectVectors()
 {
     // Calculate the new forward vector
@@ -116,4 +170,10 @@ void MoveableObject::UpdateObjectVectors()
     //See if right is needed
 
     right = glm::normalize(glm::cross(forward, worldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+}
+
+bool MoveableObject::IsCloseToTarget(const glm::vec3 targetPosition)
+{
+	float maxDistance = .2f;
+    return (glm::distance(position, targetPosition) < maxDistance);
 }

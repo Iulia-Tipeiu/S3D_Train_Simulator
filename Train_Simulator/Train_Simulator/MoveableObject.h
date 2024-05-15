@@ -50,8 +50,15 @@ public:
 
     float GetYaw();
 
+	void MoveForward(float speed);
+
+	bool MoveTo(glm::vec3 targetPosition, float targetRotationAngle, float speed);
+
+	void LookAt(glm::vec3 targetPosition, float speed);
+
 private:
     void UpdateObjectVectors();
+	bool IsCloseToTarget(const glm::vec3 targetPosition);
 
 protected:
     const float vehicleSpeedFactor = 2.5f;
