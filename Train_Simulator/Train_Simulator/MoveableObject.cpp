@@ -111,7 +111,7 @@ void MoveableObject::MoveForward(float speed)
 	position += forward * speed;
 }
 
-bool MoveableObject::MoveTo(glm::vec3 targetPosition, float targetRotationAngle, float speed)
+bool MoveableObject::MoveTo(glm::vec3 targetPosition, float speed)
 {
 	// return true when it reach the target position
 	if (IsCloseToTarget(targetPosition))
@@ -126,7 +126,7 @@ bool MoveableObject::MoveTo(glm::vec3 targetPosition, float targetRotationAngle,
 			glm::vec3 direction = glm::normalize(targetPosition - position);
 			position += direction * speed;
 
-            LookAt(targetPosition, speed);
+            LookAt(targetPosition);
 		}
 
 
@@ -150,7 +150,7 @@ bool MoveableObject::MoveTo(glm::vec3 targetPosition, float targetRotationAngle,
 	}
 }
 
-void MoveableObject::LookAt(glm::vec3 targetPosition, float speed)
+void MoveableObject::LookAt(glm::vec3 targetPosition)
 {
 	glm::vec3 direction = glm::normalize(targetPosition - position);
 	float angle = glm::degrees(atan2(direction.x, direction.z));
@@ -158,6 +158,12 @@ void MoveableObject::LookAt(glm::vec3 targetPosition, float speed)
 	yaw = angle;
 	UpdateObjectVectors();
 
+	lookAtTarget = targetPosition;
+}
+
+glm::vec3 MoveableObject::GetLookAtTarget()
+{
+    return lookAtTarget;
 }
 
 void MoveableObject::UpdateObjectVectors()

@@ -52,9 +52,11 @@ public:
 
 	void MoveForward(float speed);
 
-	bool MoveTo(glm::vec3 targetPosition, float targetRotationAngle, float speed);
+	bool MoveTo(glm::vec3 targetPosition, float speed);
 
-	void LookAt(glm::vec3 targetPosition, float speed);
+	void LookAt(glm::vec3 targetPosition);
+
+	glm::vec3 GetLookAtTarget();
 
 private:
     void UpdateObjectVectors();
@@ -76,6 +78,8 @@ protected:
     glm::vec3 right;
     float rotation = 1.0f;
     glm::vec3 worldUp;
+
+	glm::vec3 lookAtTarget;
 
     // Euler Angles
     float yaw;

@@ -477,6 +477,7 @@ int main(int argc, char** argv)
     // run the day night thread
     std::thread dayNightThread(process_day_night);
 
+    
     while (!glfwWindowShouldClose(window))
     {
 
@@ -645,7 +646,7 @@ int main(int argc, char** argv)
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-		movementAllowed = true;
+        movementAllowed = true;
     }
 
     gameRunning = false;
@@ -836,22 +837,35 @@ void Start()
     trainVehicle.Set(SCR_WIDTH, SCR_HEIGHT, rails[0].position);
 
     // prepare camera
+    pCamera->SetFreeCamera(false);
     pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
 	pCamera->LookAt(trainVehicle.GetForward());
+
+    
+    
 }
 
 int railIndex = 1;
-
 
 /// <summary>
 /// This is called once per frame
 /// </summary>
 void Update()
 {
-    if (!movementAllowed) return;
-    if (trainVehicle.MoveTo(rails[railIndex].position, rails[railIndex].rotation, deltaTime * TRAIN_SPEED))
+    if (!movementAllowed) 
+        return;
+
+ //   pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
+	//pCamera->SetForwardVector(trainVehicle.GetForward());
+ //   pCamera->LookAt(trainVehicle.GetForward());
+
+
+    if (trainVehicle.MoveTo(rails[railIndex].position, deltaTime * TRAIN_SPEED))
     {
-        railIndex++;
-		std::cout << "Next rail: " << railIndex << std::endl;
+        if (railIndex < rails.size() - 1)
+        {
+            railIndex++;
+            std::cout << "Next rail: " << railIndex << std::endl;
+        }
     }
 }
