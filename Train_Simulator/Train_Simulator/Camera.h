@@ -62,6 +62,12 @@ public:
 
 	void LookAt(glm::vec3 target);
 
+	void SetRotation(float angle);
+
+	void LookAt(MoveableObject* model);
+
+	float GetYaw();
+
 private:
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
 

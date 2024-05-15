@@ -96,6 +96,12 @@ void MoveableObject::SetRotation(float newRotation)
     rotation = newRotation;
 }
 
+void MoveableObject::SetPosition(glm::vec3 position)
+{
+	this->position = position;
+
+}
+
 glm::vec3 MoveableObject::GetForward()
 {
     return forward;
@@ -126,10 +132,10 @@ bool MoveableObject::MoveTo(glm::vec3 targetPosition, float speed)
 			glm::vec3 direction = glm::normalize(targetPosition - position);
 			position += direction * speed;
 
-            LookAt(targetPosition);
+            
 		}
 
-
+        LookAt(targetPosition);
 		
 		// rotate to the target angle
 		//if (rotation != targetRotationAngle)
