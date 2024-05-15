@@ -477,6 +477,7 @@ int main(int argc, char** argv)
     // run the day night thread
     std::thread dayNightThread(process_day_night);
 
+    
     while (!glfwWindowShouldClose(window))
     {
 
@@ -645,7 +646,7 @@ int main(int argc, char** argv)
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-		movementAllowed = true;
+        movementAllowed = true;
     }
 
     gameRunning = false;
@@ -842,16 +843,19 @@ void Start()
 
 int railIndex = 1;
 
-
 /// <summary>
 /// This is called once per frame
 /// </summary>
 void Update()
 {
-    if (!movementAllowed) return;
+    if (!movementAllowed) 
+        return;
+
+
     if (trainVehicle.MoveTo(rails[railIndex].position, rails[railIndex].rotation, deltaTime * TRAIN_SPEED))
     {
-        railIndex++;
+        if (railIndex < rails.size() - 1)
+            railIndex++;
 		std::cout << "Next rail: " << railIndex << std::endl;
     }
 }
