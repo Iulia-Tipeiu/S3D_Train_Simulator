@@ -57,7 +57,7 @@ const unsigned int DAY_NIGHT_CYCLE_SPEED_MS = 20; // lower = faster
 const float TRAIN_SPEED = 0.5f;
 const float CAMERA_SPEED = 5.0f;
 
-glm::vec3 trainScale = glm::vec3(0.5f);
+glm::vec3 trainScale = glm::vec3(1.0f);
 glm::vec3 mountainScale = glm::vec3(.7f);
 glm::vec3 railsScale = glm::vec3(0.5f);
 
@@ -221,14 +221,52 @@ const std::vector<std::string>facesNight
 
 std::vector<rail> rails = {
 	
-    rail(123, -1.5F, -195,      0,  STRAIGHT),
+    rail(123, -1.5F, -195,  0,  STRAIGHT),
     rail(123, -1.5F, -184.9,  0,  STRAIGHT),
     rail(123, -1.5F, -174.8,  0,  STRAIGHT),
 	rail(123, -1.5F, -164.7,  180,  TURN_RIGHT),
 	rail(120.58, -1.5F, -155,  164.2,  TURN_RIGHT),
 	rail(115.5, -1.5F, -146.1,  148.85,  TURN_RIGHT),
-	rail(109, -1.5F, -139.4,  134.53,  STRAIGHT),
-	
+	rail(109, -1.5F, -139.4,  134.51,  STRAIGHT),
+    rail(101.9, -1.5F, -132.429,  134.51,  STRAIGHT),
+    rail(94.8, -1.5F, -125.45,  134.51,  STRAIGHT),
+    rail(87.7, -1.5F, -118.47,  134.51,  STRAIGHT),
+    rail(80.6, -1.5F, -111.49,  134.51,  STRAIGHT),
+    rail(73.5, -1.5F, -104.51,  134.51,  STRAIGHT),
+    rail(66.4, -1.5F, -97.53,  134.51,  STRAIGHT),
+    rail(59.3, -1.5F, -90.55,  134.51,  STRAIGHT),
+    rail(52.2, -1.5F, -83.57,  134.51,  STRAIGHT),
+    rail(45.1, -1.5F, -76.59,  134.51,  STRAIGHT),
+    rail(38, -1.5F, -69.61,  134.51,  STRAIGHT),
+    rail(30.9, -1.5F, -62.63,  134.51,  STRAIGHT),
+    rail(23.8, -1.5F, -55.65,  134.51,  STRAIGHT),
+    rail(16.7, -1.5F, -48.67,  134.51,  STRAIGHT),
+    rail(9.6, -1.5F, -41.69,  134.51,  TURN_LEFT),
+    rail(4.43, -1.5F, -32.9,  152.2,  TURN_LEFT),
+    rail(3.04, -1.5F, -23.05,  -0.5,  STRAIGHT),
+    rail(2.95, -1.5F, -13,  -0.5,  STRAIGHT),
+    rail(2.86, -1.5F, -2.95,  -0.5,  STRAIGHT),
+    rail(2.77, -1.5F, 7.1,  -0.5,  STRAIGHT),
+    rail(2.68, -1.5F, 17.15,  -0.5,  STRAIGHT),
+    rail(2.59, -1.5F, 27.2,  -0.5,  STRAIGHT),
+    rail(2.5, -1.5F, 37.25,  -0.5,  STRAIGHT),
+    rail(2.41, -1.5F, 47.3,  -0.5,  STRAIGHT),
+    rail(2.32, -1.5F, 57.35,  -0.5,  STRAIGHT),
+    rail(2.23, -1.5F, 67.4,  -0.5,  STRAIGHT),
+    rail(2.14, -1.5F, 77.45,  -0.5,  STRAIGHT),
+    rail(2.05, -1.5F, 87.5,  -0.5,  STRAIGHT),
+    rail(1.96, -1.5F, 97.55,  -0.5,  STRAIGHT),
+    rail(1.87, -1.5F, 107.6,  -0.5,  STRAIGHT),
+    rail(1.78, -1.5F, 117.65,  -0.5,  STRAIGHT),
+    rail(1.69, -1.5F, 127.7,  -0.5,  STRAIGHT),
+    rail(1.6, -1.5F, 137.75,  -0.5,  STRAIGHT),
+    rail(1.51, -1.5F, 147.8,  -0.5,  STRAIGHT),
+    rail(1.42, -1.5F, 157.85,  -0.5,  STRAIGHT),
+    rail(1.33, -1.5F, 167.9,  -0.5,  STRAIGHT),
+    rail(1.24, -1.5F, 177.95,  -0.5,  STRAIGHT),
+    rail(1.15, -1.5F, 188,  -0.5,  STRAIGHT),
+    rail(1.06, -1.5F, 198.05,  -0.5,  STRAIGHT),
+
 };
 
 
@@ -404,7 +442,7 @@ int main(int argc, char** argv)
 
     trainModel = Model("Assets\\Models\\Train\\2te116.obj");
     
-    trainVehicle = MoveableObject(trainModel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 0.0f));
+    trainVehicle = MoveableObject(trainModel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(2.5f, -1.47f, 17.15f));
 
     currentObject = &trainVehicle;
 
@@ -417,10 +455,10 @@ int main(int argc, char** argv)
 	Model railTurnRight("Assets\\Models\\tracks\\RailTurnRight.obj");
 
 	
-	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, -1.55f, 20.0f));
+	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(-1.0f, -1.55f, 20.0f));
     trainStationObject.SetRotation(90);
 
-    pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(123, 0, -190));
+    pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 0, -20));
     //pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
 
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -498,7 +536,7 @@ int main(int argc, char** argv)
         glCullFace(GL_FRONT);
         renderScene(shadowMappingDepthShader);
 
-        float trainRotation = 0.0f;
+        float trainRotation = -0.5f;
 
         renderModel(shadowMappingDepthShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
 
