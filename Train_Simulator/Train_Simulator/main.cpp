@@ -37,6 +37,7 @@ const unsigned int SCR_HEIGHT = 1080;
 bool isDayTime = true;
 bool gameRunning = false;
 bool movementAllowed = false;
+bool cameraMovementAllowed = true;
 
 enum railType {
     STRAIGHT,
@@ -495,7 +496,7 @@ int main(int argc, char** argv)
         lastFrame = currentFrame;
 
 		glm::vec3 cameraPosition = pCamera->GetPosition();
-		std::string title = "X:" + std::to_string(cameraPosition.x) + " Y:" + std::to_string(cameraPosition.y) + " Z:" + std::to_string(cameraPosition.z);
+		std::string title = "X:" + std::to_string(cameraPosition.x) + " Y:" + std::to_string(cameraPosition.y) + " Z:" + std::to_string(cameraPosition.z) + " R:" + std::to_string(pCamera->GetYaw()) + " Train_Yaw:" + std::to_string(currentObject->GetYaw());
 		glfwSetWindowTitle(window, title.c_str());
 
         // input
@@ -607,7 +608,7 @@ int main(int argc, char** argv)
 			}
         }
 
-        Update();
+        
 
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f); // White light
         glm::vec3 lightDir = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)); // Example direction
@@ -645,7 +646,7 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-
+        Update();
         movementAllowed = true;
     }
 
@@ -771,7 +772,7 @@ void processInput(GLFWwindow* window)
 
 
 #ifdef _DEBUG
-    if (pCamera->GetFreeCamera())
+    if (cameraMovementAllowed)
     {
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             speedFactor = CAMERA_SPEED;
@@ -796,6 +797,15 @@ void processInput(GLFWwindow* window)
 		//	pCamera->LookAt(trainVehicle.GetPosition(), trainVehicle.GetRotation());
     }
 
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    {
+        cameraMovementAllowed = true;
+    }
+
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+	{
+		cameraMovementAllowed = false;
+	}
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {
@@ -834,11 +844,16 @@ void Start()
 {
     //prepare train
     
-    trainVehicle.Set(SCR_WIDTH, SCR_HEIGHT, rails[0].position);
+    
+	pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0,5,0));
+    trainVehicle.SetPosition(rails[0].position);
+	pCamera->SetForwardVector(trainVehicle.GetForward());
+    pCamera->SetRotation(trainVehicle.GetRotation());
+	currentObject = &trainVehicle;
+	cameraMovementAllowed = false;
 
-    // prepare camera
-    pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
-	pCamera->LookAt(trainVehicle.GetForward());
+
+   // std::cout << "Start yaw:" << trainVehicle.GetRotation() << " " << pCamera->GetYaw() << std::endl;
 }
 
 int railIndex = 1;
@@ -851,11 +866,20 @@ void Update()
     if (!movementAllowed) 
         return;
 
+    if (!cameraMovementAllowed)
+    {
+		pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
+        float trainYaw = trainVehicle.GetRotation();
 
-    if (trainVehicle.MoveTo(rails[railIndex].position, rails[railIndex].rotation, deltaTime * TRAIN_SPEED))
+        pCamera->SetRotation(abs(trainYaw)+90);
+    }
+
+    if (trainVehicle.MoveTo(rails[railIndex].position, deltaTime * TRAIN_SPEED))
     {
         if (railIndex < rails.size() - 1)
+        {
             railIndex++;
-		std::cout << "Next rail: " << railIndex << std::endl;
+            std::cout << "Next rail: " << railIndex << std::endl;
+        }
     }
 }
