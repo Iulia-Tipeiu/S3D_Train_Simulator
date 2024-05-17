@@ -368,7 +368,7 @@ int main(int argc, char** argv)
 
     // lighting info
     // -------------
-    glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
+    glm::vec3 lightPos(123, 0, -90);
 
     glEnable(GL_CULL_FACE);
 
@@ -507,6 +507,8 @@ int main(int argc, char** argv)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        
+
 		glm::vec3 cameraPosition = pCamera->GetPosition();
 		std::string title = "X:" + std::to_string(cameraPosition.x) + " Y:" + std::to_string(cameraPosition.y) + " Z:" + std::to_string(cameraPosition.z) + " R:" + std::to_string(pCamera->GetYaw()) + " Train_Yaw:" + std::to_string(currentObject->GetYaw());
 		glfwSetWindowTitle(window, title.c_str());
@@ -520,7 +522,7 @@ int main(int argc, char** argv)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        
+        lightPos = trainVehicle.GetPosition() + glm::vec3(0,5,0);
 
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
@@ -535,8 +537,9 @@ int main(int argc, char** argv)
         glm::vec4 rotatedLightPos = lightRotationMatrix * glm::vec4(lightPos, 1.0f);
 
         float near_plane = 1.0f, far_plane = 10.5f;
-        lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        //lightProjection = glm::ortho(-400.0f, 400.0f, -400.0f, 400.0f, near_plane, far_plane);
+		lightProjection = glm::perspective(glm::radians(360.0f), 1.0f, near_plane, far_plane);
+        lightView = glm::lookAt(trainVehicle.GetPosition(), lightPos, glm::vec3(0.0, 1.0f, 0.0));
         lightSpaceMatrix = lightProjection * lightView;
 
         // render scene from light's point of view
@@ -561,16 +564,12 @@ int main(int argc, char** argv)
 
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
-            renderModel(shadowMappingDepthShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i] * mountainScale);
+            renderModel(shadowMappingDepthShader, mountainModel, mountainsPositions[i], mountainRotation, mountainsScales[i] * mountainScale);
         }
 
 
         glCullFace(GL_BACK);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // reset viewport
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -619,8 +618,6 @@ int main(int argc, char** argv)
 				break;
 			}
         }
-
-        
 
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f); // White light
         glm::vec3 lightDir = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)); // Example direction
