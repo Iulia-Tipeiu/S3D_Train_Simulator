@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <chrono>
+#include <iomanip>
 #include <thread>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -106,6 +107,17 @@ unsigned int CreateTexture(const std::string& strTexturePath)
     return textureId;
 }
 
+void debug(const std::string& message) {
+    time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+	std::cout << "[" << std::put_time(localtime(&now), "%F %T") <<"] " << message << "\n";
+}
+
+void debug(const char* message) {
+    time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+    std::cout << "[" << std::put_time(localtime(&now), "%F %T") << "] " << message << "\n";
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -725,6 +737,8 @@ void renderModel(Shader& ourShader, Model& ourModel, const glm::vec3& position, 
     ourShader.SetMat4("projection", projectionMatrix);
 
     ourModel.Draw(ourShader);
+
+	//debug("Model (path: " + ourModel.directory + ") rendered at position: " + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z));
 }
 
 
@@ -792,9 +806,6 @@ void processInput(GLFWwindow* window)
             pCamera->ProcessKeyboard(UP, (float)deltaTime * speedFactor);
         if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
             pCamera->ProcessKeyboard(DOWN, (float)deltaTime * speedFactor);
-
-		//if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		//	pCamera->LookAt(trainVehicle.GetPosition(), trainVehicle.GetRotation());
     }
 
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
@@ -806,14 +817,6 @@ void processInput(GLFWwindow* window)
 	{
 		cameraMovementAllowed = false;
 	}
-
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-    {
-        int width, height;
-        glfwGetWindowSize(window, &width, &height);
-        pCamera->Reset(width, height);
-
-    }
 #endif // DEBUG
 
 
@@ -842,18 +845,12 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yOffset)
 /// </summary>
 void Start()
 {
-    //prepare train
-    
-    
 	pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0,5,0));
     trainVehicle.SetPosition(rails[0].position);
 	pCamera->SetForwardVector(trainVehicle.GetForward());
     pCamera->SetRotation(trainVehicle.GetRotation());
 	currentObject = &trainVehicle;
 	cameraMovementAllowed = false;
-
-
-   // std::cout << "Start yaw:" << trainVehicle.GetRotation() << " " << pCamera->GetYaw() << std::endl;
 }
 
 int railIndex = 1;
@@ -879,7 +876,8 @@ void Update()
         if (railIndex < rails.size() - 1)
         {
             railIndex++;
-            std::cout << "Next rail: " << railIndex << std::endl;
+            
+			debug("Rail index: " + std::to_string(railIndex));
         }
     }
 }
