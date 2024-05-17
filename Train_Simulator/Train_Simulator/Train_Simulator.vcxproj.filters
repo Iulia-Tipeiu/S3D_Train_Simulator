@@ -82,5 +82,11 @@
     <None Include="Text.vs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="CircleShader.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="CircleShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

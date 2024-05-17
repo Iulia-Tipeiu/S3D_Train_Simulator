@@ -123,6 +123,18 @@ void renderModel(Shader& ourShader, Model& ourModel, const glm::vec3& position, 
 double deltaTime = 0.0f; // time between current frame and last frame
 double lastFrame = 0.0f;
 
+void updateLightPosition(float& lightX, float& lightY, float& lightZ, float elapsedTime) {
+    // Calculate new light position based on elapsed time
+    float radius = 20.0f; // Distance from the center of the scene
+    float angularSpeed = 0.1f; // Speed of the sun's movement
+
+    lightX = radius * cos(angularSpeed * elapsedTime);
+    lightZ = radius * sin(angularSpeed * elapsedTime);
+    lightY = radius * sin(angularSpeed * elapsedTime / 2.0f); // Adjust the vertical movement
+}
+
+
+
 float skyboxVertices[] = {
     -1.0f,  -1.0f, 1.0f,
     1.0f, -1.0f, 1.0f,
@@ -608,7 +620,14 @@ int main(int argc, char** argv)
 			}
         }
 
-        
+
+        glm::vec3 sunPos(-2.0f, 4.0f, -1.0f);
+        glm::vec3 moonPos(2.0f, -4.0f, 1.0f);
+
+        glm::vec3 sunColor(1.0f, 0.95f, 0.8f);
+        glm::vec3 moonColor(0.6f, 0.7f, 1.0f);
+
+        float sunMoonBlendFactor = 0.0f;
 
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f); // White light
         glm::vec3 lightDir = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)); // Example direction
@@ -861,6 +880,11 @@ int railIndex = 1;
 /// <summary>
 /// This is called once per frame
 /// </summary>
+
+float stopDuration = 5.0f; 
+bool isStopped = false;
+std::chrono::time_point<std::chrono::steady_clock> stopStartTime;
+
 void Update()
 {
     if (!movementAllowed) 
@@ -874,12 +898,36 @@ void Update()
         pCamera->SetRotation(abs(trainYaw)+90);
     }
 
+    if (isStopped)
+    {
+        auto currentTime = std::chrono::steady_clock::now();
+        float elapsedTime = std::chrono::duration<float>(currentTime - stopStartTime).count();
+
+        if (elapsedTime >= stopDuration)
+        {
+            isStopped = false;
+            std::cout << "Stop completed. Resuming movement." << std::endl;
+        }
+        else
+        {
+            return;
+        }
+    }
+
     if (trainVehicle.MoveTo(rails[railIndex].position, deltaTime * TRAIN_SPEED))
     {
-        if (railIndex < rails.size() - 1)
+        if (railIndex == 26)
         {
+            isStopped = true;
+            stopStartTime = std::chrono::steady_clock::now();
+            std::cout << "Train stopped at index " << 26 << ". Waiting for " << stopDuration << " seconds." << std::endl;
+            
+        }
+        if (railIndex < rails.size() - 1)
+        {            
             railIndex++;
             std::cout << "Next rail: " << railIndex << std::endl;
         }
     }
 }
+

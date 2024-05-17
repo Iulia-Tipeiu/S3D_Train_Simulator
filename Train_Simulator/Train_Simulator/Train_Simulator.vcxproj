@@ -161,6 +161,8 @@
     <ClInclude Include="Shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CircleShader.fs" />
+    <None Include="CircleShader.vs" />
     <None Include="ModelShader.fs" />
     <None Include="ModelShader.vs" />
     <None Include="ShadowMapping.fs" />
