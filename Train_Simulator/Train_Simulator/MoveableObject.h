@@ -46,12 +46,23 @@ public:
 
     void SetRotation(float newRotation);
 
+	void SetPosition(glm::vec3 position);
+
     glm::vec3 GetForward();
 
     float GetYaw();
 
+	void MoveForward(float speed);
+
+	bool MoveTo(glm::vec3 targetPosition, float speed);
+
+	void LookAt(glm::vec3 targetPosition);
+
+	glm::vec3 GetLookAtTarget();
+
 private:
     void UpdateObjectVectors();
+	bool IsCloseToTarget(const glm::vec3 targetPosition);
 
 protected:
     const float vehicleSpeedFactor = 2.5f;
@@ -69,6 +80,8 @@ protected:
     glm::vec3 right;
     float rotation = 1.0f;
     glm::vec3 worldUp;
+
+	glm::vec3 lookAtTarget;
 
     // Euler Angles
     float yaw;
