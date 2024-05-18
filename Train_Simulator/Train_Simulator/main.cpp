@@ -32,27 +32,27 @@
 #pragma comment (lib, "glew32.lib")
 #pragma comment (lib, "OpenGL32.lib")
 
-
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 bool isDayTime = true;
 bool gameRunning = false;
 bool movementAllowed = false;
 bool cameraMovementAllowed = true;
+bool cabinView = false;
 
 enum railType {
     STRAIGHT,
-	TURN_LEFT,
-	TURN_RIGHT,
-	SWITCH_LEFT,
-	SWITCH_RIGHT
+    TURN_LEFT,
+    TURN_RIGHT,
+    SWITCH_LEFT,
+    SWITCH_RIGHT
 };
 struct rail {
     glm::vec3 position;
-	float rotation;
-	railType type;
+    float rotation;
+    railType type;
 
-	rail(float x, float y, float z, float rotationAngle, railType type) : position(glm::vec3(x, y, z)), type(type), rotation(rotationAngle) {}
+    rail(float x, float y, float z, float rotationAngle, railType type) : position(glm::vec3(x, y, z)), type(type), rotation(rotationAngle) {}
 };
 
 // The amount of ms between light changes
@@ -63,6 +63,7 @@ const float CAMERA_SPEED = 5.0f;
 glm::vec3 trainScale = glm::vec3(1.0f);
 glm::vec3 mountainScale = glm::vec3(.7f);
 glm::vec3 railsScale = glm::vec3(0.5f);
+glm::vec3 controlPanelScale = glm::vec3(0.01f);
 
 Camera* pCamera = nullptr;
 
@@ -110,7 +111,7 @@ unsigned int CreateTexture(const std::string& strTexturePath)
 void debug(const std::string& message) {
     time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-	std::cout << "[" << std::put_time(localtime(&now), "%F %T") <<"] " << message << "\n";
+    std::cout << "[" << std::put_time(localtime(&now), "%F %T") << "] " << message << "\n";
 }
 
 void debug(const char* message) {
@@ -138,10 +139,10 @@ double lastFrame = 0.0f;
 float skyboxVertices[] = {
     -1.0f,  -1.0f, 1.0f,
     1.0f, -1.0f, 1.0f,
-     1.0f, -1.0f, -1.0f,
-     -1.0f, -1.0f, -1.0f,
-     -1.0f, 1.0f, 1.0f,
-     1.0f,  1.0f, 1.0f,
+    1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f,  1.0f, 1.0f,
     1.0f,  1.0f, -1.0f,
     -1.0f,  1.0f, -1.0f
 };
@@ -163,8 +164,11 @@ unsigned int skyboxIndices[] =
 };
 
 Model trainModel;
+Model controlPanel;
+Shader* ModelShader;
 
 MoveableObject trainVehicle;
+MoveableObject controlPanelObject;
 
 std::vector<glm::vec3> mountainsPositions =
 {
@@ -234,14 +238,14 @@ const std::vector<std::string>facesNight
 // x-2.42,  y,  z+9.7,  r-15.8, TURN_RIGHT
 
 std::vector<rail> rails = {
-	
+
     rail(123, -1.5F, -195,  0,  STRAIGHT),
     rail(123, -1.5F, -184.9,  0,  STRAIGHT),
     rail(123, -1.5F, -174.8,  0,  STRAIGHT),
-	rail(123, -1.5F, -164.7,  180,  TURN_RIGHT),
-	rail(120.58, -1.5F, -155,  164.2,  TURN_RIGHT),
-	rail(115.5, -1.5F, -146.1,  148.85,  TURN_RIGHT),
-	rail(109, -1.5F, -139.4,  134.51,  STRAIGHT),
+    rail(123, -1.5F, -164.7,  180,  TURN_RIGHT),
+    rail(120.58, -1.5F, -155,  164.2,  TURN_RIGHT),
+    rail(115.5, -1.5F, -146.1,  148.85,  TURN_RIGHT),
+    rail(109, -1.5F, -139.4,  134.51,  STRAIGHT),
     rail(101.9, -1.5F, -132.429,  134.51,  STRAIGHT),
     rail(94.8, -1.5F, -125.45,  134.51,  STRAIGHT),
     rail(87.7, -1.5F, -118.47,  134.51,  STRAIGHT),
@@ -283,7 +287,6 @@ std::vector<rail> rails = {
 
 };
 
-
 float blendFactor = 0;
 float ambientFactor = 0.9;
 
@@ -322,14 +325,15 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
 
-
     // build and compile shaders
     // -------------------------
     Shader shadowMappingShader("ShadowMapping.vs", "ShadowMapping.fs");
     Shader shadowMappingDepthShader("ShadowMappingDepth.vs", "ShadowMappingDepth.fs");
-    Shader ModelShader("ModelShader.vs", "ModelShader.fs");
     Shader skyboxShader("skybox.vs", "skybox.fs");
     Shader textShader("text.vs", "text.fs");
+
+    // Initialize ModelShader
+    ModelShader = new Shader("ModelShader.vs", "ModelShader.fs");
 
     // load textures
     // -------------
@@ -455,21 +459,25 @@ int main(int argc, char** argv)
     }
 
     trainModel = Model("Assets\\Models\\Train\\2te116.obj");
-    
+
     trainVehicle = MoveableObject(trainModel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(2.5f, -1.47f, 17.15f));
 
     currentObject = &trainVehicle;
 
-    Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
-	Model trainStation("Assets\\Models\\TrainStation\\milwaukeeroaddepot.obj");
-    Model railStraight("Assets\\Models\\tracks\\RailStraight.obj");
-	Model railSwitchLeft("Assets\\Models\\tracks\\RailSwitchLeft.obj");
-	Model railSwitchRight("Assets\\Models\\tracks\\RailSwitchRight.obj");
-	Model railTurnLeft("Assets\\Models\\tracks\\RailTurnLeft.obj");
-	Model railTurnRight("Assets\\Models\\tracks\\RailTurnRight.obj");
+    controlPanel = Model("Assets\\Models\\ControlPanel\\10472_LED_Control_Panel_v1_max2010_iteration-2.obj");
+    controlPanelObject = MoveableObject(controlPanel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(123, 3.5f, -190.0f));
+    controlPanelObject.SetRotation(180);
 
-	
-	MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(-1.0f, -1.55f, 20.0f));
+    Model mountainModel("Assets\\Models\\Mountain\\mountain.obj");
+    Model trainStation("Assets\\Models\\TrainStation\\milwaukeeroaddepot.obj");
+    Model railStraight("Assets\\Models\\tracks\\RailStraight.obj");
+    Model railSwitchLeft("Assets\\Models\\tracks\\RailSwitchLeft.obj");
+    Model railSwitchRight("Assets\\Models\\tracks\\RailSwitchRight.obj");
+    Model railTurnLeft("Assets\\Models\\tracks\\RailTurnLeft.obj");
+    Model railTurnRight("Assets\\Models\\tracks\\RailTurnRight.obj");
+
+
+    MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(-1.0f, -1.55f, 20.0f));
     trainStationObject.SetRotation(90);
 
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 0, -20));
@@ -484,13 +492,13 @@ int main(int argc, char** argv)
     // start in fullscreen
 
     //glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-    
-	Start();
+
+    Start();
 
     // run the day night thread
     std::thread dayNightThread(process_day_night);
 
-    
+
     while (!glfwWindowShouldClose(window))
     {
 
@@ -507,11 +515,11 @@ int main(int argc, char** argv)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        
 
-		glm::vec3 cameraPosition = pCamera->GetPosition();
-		std::string title = "X:" + std::to_string(cameraPosition.x) + " Y:" + std::to_string(cameraPosition.y) + " Z:" + std::to_string(cameraPosition.z) + " R:" + std::to_string(pCamera->GetYaw()) + " Train_Yaw:" + std::to_string(currentObject->GetYaw());
-		glfwSetWindowTitle(window, title.c_str());
+
+        glm::vec3 cameraPosition = pCamera->GetPosition();
+        std::string title = "X:" + std::to_string(cameraPosition.x) + " Y:" + std::to_string(cameraPosition.y) + " Z:" + std::to_string(cameraPosition.z) + " R:" + std::to_string(pCamera->GetYaw()) + " Train_Yaw:" + std::to_string(currentObject->GetYaw());
+        glfwSetWindowTitle(window, title.c_str());
 
         // input
         // -----
@@ -522,7 +530,7 @@ int main(int argc, char** argv)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        lightPos = trainVehicle.GetPosition() + glm::vec3(0,5,0);
+        lightPos = trainVehicle.GetPosition() + glm::vec3(0, 5, 0);
 
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
@@ -538,7 +546,7 @@ int main(int argc, char** argv)
 
         float near_plane = 1.0f, far_plane = 10.5f;
         //lightProjection = glm::ortho(-400.0f, 400.0f, -400.0f, 400.0f, near_plane, far_plane);
-		lightProjection = glm::perspective(glm::radians(360.0f), 1.0f, near_plane, far_plane);
+        lightProjection = glm::perspective(glm::radians(360.0f), 1.0f, near_plane, far_plane);
         lightView = glm::lookAt(trainVehicle.GetPosition(), lightPos, glm::vec3(0.0, 1.0f, 0.0));
         lightSpaceMatrix = lightProjection * lightView;
 
@@ -559,8 +567,11 @@ int main(int argc, char** argv)
 
         renderModel(shadowMappingDepthShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
 
+        float controlPanelRotation = 179.5f;
+        renderModel(shadowMappingDepthShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
+
         float mountainRotation = 0.0f;
-        
+
 
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
@@ -590,43 +601,47 @@ int main(int argc, char** argv)
         glDisable(GL_CULL_FACE);
         renderScene(shadowMappingShader);
 
-        renderModel(ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
-		renderModel(ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
+        renderModel(*ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
+        renderModel(*ModelShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
+
+        renderModel(*ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
-            renderModel(ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i] * mountainScale);
+            renderModel(*ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i] * mountainScale);
         }
 
         for (auto rail : rails)
         {
-			switch (rail.type)
-			{
-			case STRAIGHT:
-				renderModel(ModelShader, railStraight, rail.position, rail.rotation, railsScale);
-				break;
-			case TURN_LEFT:
-				renderModel(ModelShader, railTurnLeft, rail.position, rail.rotation, railsScale);
-				break;
-			case TURN_RIGHT:
-				renderModel(ModelShader, railTurnRight, rail.position, rail.rotation, railsScale);
-				break;
-			case SWITCH_LEFT:
-				renderModel(ModelShader, railSwitchLeft, rail.position, rail.rotation, railsScale);
-				break;
-			case SWITCH_RIGHT:
-				renderModel(ModelShader, railSwitchRight, rail.position, rail.rotation, railsScale);
-				break;
-			}
+            switch (rail.type)
+            {
+            case STRAIGHT:
+                renderModel(*ModelShader, railStraight, rail.position, rail.rotation, railsScale);
+                break;
+            case TURN_LEFT:
+                renderModel(*ModelShader, railTurnLeft, rail.position, rail.rotation, railsScale);
+                break;
+            case TURN_RIGHT:
+                renderModel(*ModelShader, railTurnRight, rail.position, rail.rotation, railsScale);
+                break;
+            case SWITCH_LEFT:
+                renderModel(*ModelShader, railSwitchLeft, rail.position, rail.rotation, railsScale);
+                break;
+            case SWITCH_RIGHT:
+                renderModel(*ModelShader, railSwitchRight, rail.position, rail.rotation, railsScale);
+                break;
+            }
         }
+
+        // renderModel(*ModelShader, controlPanel, glm::vec3(123, 3.5f, -190.0f), 90, glm::vec3(0.01f));
 
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f); // White light
         glm::vec3 lightDir = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)); // Example direction
         glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f); // Example color (rust)
 
-        ModelShader.Use();
-        ModelShader.SetVec3("lightColor", lightColor);
-        ModelShader.SetVec3("lightDir", lightDir);
-        ModelShader.SetVec3("objectColor", objectColor);
+        ModelShader->Use();
+        ModelShader->SetVec3("lightColor", lightColor);
+        ModelShader->SetVec3("lightDir", lightDir);
+        ModelShader->SetVec3("objectColor", objectColor);
 
         glDepthFunc(GL_LEQUAL);
         glDepthMask(GL_FALSE);
@@ -662,6 +677,7 @@ int main(int argc, char** argv)
     gameRunning = false;
     dayNightThread.join();
     delete pCamera;
+    delete ModelShader;
     glfwTerminate();
     return 0;
 }
@@ -677,7 +693,6 @@ void renderScene(const Shader& shader)
     shader.SetMat4("model", model);
     renderFloor();
 }
-
 
 unsigned int planeVAO = 0;
 void renderFloor()
@@ -735,9 +750,8 @@ void renderModel(Shader& ourShader, Model& ourModel, const glm::vec3& position, 
 
     ourModel.Draw(ourShader);
 
-	//debug("Model (path: " + ourModel.directory + ") rendered at position: " + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z));
+    //debug("Model (path: " + ourModel.directory + ") rendered at position: " + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z));
 }
-
 
 void blendNight()
 {
@@ -749,7 +763,6 @@ void blendDay()
 {
     blendFactor = std::max(blendFactor - 0.001, 0.0);
     ambientFactor = std::min(ambientFactor + 0.001, 0.9);
-
 }
 
 void process_day_night()
@@ -759,15 +772,14 @@ void process_day_night()
         if (isDayTime)
         {
             blendNight();
-            if(blendFactor > 0.9f)
-				isDayTime = false;
+            if (blendFactor > 0.9f)
+                isDayTime = false;
         }
         else
         {
-
             blendDay();
             if (blendFactor < 0.1f)
-				isDayTime = true;
+                isDayTime = true;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(DAY_NIGHT_CYCLE_SPEED_MS));
@@ -780,7 +792,6 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
 
 #ifdef _DEBUG
     if (cameraMovementAllowed)
@@ -808,16 +819,23 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
         cameraMovementAllowed = true;
+        cabinView = false;
+        controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, -10, 0));
     }
 
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-	{
-		cameraMovementAllowed = false;
-	}
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+    {
+        cameraMovementAllowed = false;
+        cabinView = false;
+        controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, -10, 0));
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+    {
+        cabinView = true;
+        cameraMovementAllowed = false;
+    }
 #endif // DEBUG
-
-
-
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -842,39 +860,102 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yOffset)
 /// </summary>
 void Start()
 {
-	pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0,5,0));
+    pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
     trainVehicle.SetPosition(rails[0].position);
-	pCamera->SetForwardVector(trainVehicle.GetForward());
+    controlPanelObject.SetPosition(rails[0].position);
+    pCamera->SetForwardVector(trainVehicle.GetForward());
     pCamera->SetRotation(trainVehicle.GetRotation());
-	currentObject = &trainVehicle;
-	cameraMovementAllowed = false;
+    currentObject = &trainVehicle;
+    cameraMovementAllowed = false;
+    cabinView = false;
 }
 
 int railIndex = 1;
+
+// New stop functionality variables
+float stopDuration = 5.0f;
+bool isStopped = false;
+std::chrono::time_point<std::chrono::steady_clock> stopStartTime;
 
 /// <summary>
 /// This is called once per frame
 /// </summary>
 void Update()
 {
-    if (!movementAllowed) 
+    if (!movementAllowed)
         return;
 
-    if (!cameraMovementAllowed)
+    if (!cameraMovementAllowed && !cabinView)
     {
-		pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
+        pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
         float trainYaw = trainVehicle.GetRotation();
+        pCamera->SetRotation(abs(trainYaw) + 90);
+    }
 
-        pCamera->SetRotation(abs(trainYaw)+90);
+    if (cabinView)
+    {
+        if (railIndex == 4)
+        {
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1, 1.5, 3));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-1.1, 1.3f, 3.7));
+        }
+        else if (railIndex == 5)
+        {
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1.7, 1.5, 3));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-2, 1.3f, 3.5));
+        }
+        else if (railIndex == 20)
+        {
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1.5, 1.5, 3));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-1, 1.0f, 3.5));
+
+        }
+        else if (railIndex >= 6 && railIndex <= 19)
+        {
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-3, 1.5, 3));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-3.5, 1.3f, 3.5));
+        }
+        else
+        {
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.5, 3));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.2f, 3.6));
+        }
+
+        float trainYaw = trainVehicle.GetRotation();
+        pCamera->SetRotation(abs(trainYaw) + 90);
+
+        controlPanelObject.SetRotation(trainVehicle.GetRotation() + 180);
+
+    }
+
+    if (isStopped)
+    {
+        auto currentTime = std::chrono::steady_clock::now();
+        float elapsedTime = std::chrono::duration<float>(currentTime - stopStartTime).count();
+
+        if (elapsedTime >= stopDuration)
+        {
+            isStopped = false;
+            std::cout << "Stop completed. Resuming movement." << std::endl;
+        }
+        else
+        {
+            return;
+        }
     }
 
     if (trainVehicle.MoveTo(rails[railIndex].position, deltaTime * TRAIN_SPEED))
     {
+        if (railIndex == 26) // example stop at rail index 26
+        {
+            isStopped = true;
+            stopStartTime = std::chrono::steady_clock::now();
+            std::cout << "Train stopped at index " << 26 << ". Waiting for " << stopDuration << " seconds." << std::endl;
+        }
         if (railIndex < rails.size() - 1)
         {
             railIndex++;
-            
-			debug("Rail index: " + std::to_string(railIndex));
+            debug("Rail index: " + std::to_string(railIndex));
         }
     }
 }
