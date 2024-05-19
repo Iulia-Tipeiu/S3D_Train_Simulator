@@ -932,6 +932,8 @@ float stopDuration = 5.0f;
 bool isStopped = false;
 std::chrono::time_point<std::chrono::steady_clock> stopStartTime;
 
+bool returnToStart = false;
+
 /// <summary>
 /// This is called once per frame
 /// </summary>
@@ -1007,10 +1009,25 @@ void Update()
             stopStartTime = std::chrono::steady_clock::now();
             std::cout << "Train stopped at index " << 26 << ". Waiting for " << stopDuration << " seconds." << std::endl;
         }
-        if (railIndex < rails.size() - 1)
+        if (railIndex == rails.size() - 1)
         {
-            railIndex++;
-            debug("Rail index: " + std::to_string(railIndex));
+            returnToStart = true;
         }
+
+		else if (railIndex == 0)
+		{
+			returnToStart = false;
+		}
+
+		if (returnToStart)
+		{
+			railIndex--;
+		}
+		else
+		{
+			railIndex++;
+		}
+
+
     }
 }
