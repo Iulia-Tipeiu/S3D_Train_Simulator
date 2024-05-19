@@ -17,6 +17,8 @@
 
 #include <vector>
 
+#include <cstdlib>
+
 #include <chrono>
 #include <iomanip>
 #include <thread>
@@ -64,6 +66,7 @@ glm::vec3 trainScale = glm::vec3(1.0f);
 glm::vec3 mountainScale = glm::vec3(.7f);
 glm::vec3 railsScale = glm::vec3(0.5f);
 glm::vec3 controlPanelScale = glm::vec3(0.01f);
+glm::vec3 treeScale = glm::vec3(0.5f);
 
 Camera* pCamera = nullptr;
 
@@ -213,6 +216,33 @@ std::vector<glm::vec3> mountainsScales =
     glm::vec3(0.4f)
 };
 
+std::vector<glm::vec3> treePositions;
+
+bool isTooCloseToRails(const glm::vec3& treePos, const std::vector<glm::vec3>& railPositions, float minDistance) {
+    for (const auto& railPos : railPositions) {
+        float distance = glm::distance(treePos, railPos);
+        if (distance < minDistance) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void generateTreePositions(std::vector<glm::vec3>& positions, int numberOfTrees, float xMin, float xMax, float zMin, float zMax, float yLevel, const std::vector<glm::vec3>& railPositions, float minDistance) {
+    positions.clear();
+    positions.reserve(numberOfTrees);
+
+    for (int i = 0; i < numberOfTrees; ++i) {
+        glm::vec3 newPos;
+        do {
+            float x = xMin + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (xMax - xMin)));
+            float z = zMin + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (zMax - zMin)));
+            newPos = glm::vec3(x, yLevel, z);
+        } while (isTooCloseToRails(newPos, railPositions, minDistance));
+
+        positions.push_back(newPos);
+    }
+}
 
 const std::vector<std::string> facesDay
 {
@@ -287,11 +317,64 @@ std::vector<rail> rails = {
 
 };
 
+std::vector<glm::vec3> getRailPositions() {
+    std::vector<glm::vec3> railPositions = {
+        glm::vec3(123, -1.5F, -195),
+        glm::vec3(123, -1.5F, -184.9),
+        glm::vec3(123, -1.5F, -174.8),
+        glm::vec3(123, -1.5F, -164.7),
+        glm::vec3(120.58, -1.5F, -155),
+        glm::vec3(115.5, -1.5F, -146.1),
+        glm::vec3(109, -1.5F, -139.4),
+        glm::vec3(101.9, -1.5F, -132.429),
+        glm::vec3(94.8, -1.5F, -125.45),
+        glm::vec3(87.7, -1.5F, -118.47),
+        glm::vec3(80.6, -1.5F, -111.49),
+        glm::vec3(73.5, -1.5F, -104.51),
+        glm::vec3(66.4, -1.5F, -97.53),
+        glm::vec3(59.3, -1.5F, -90.55),
+        glm::vec3(52.2, -1.5F, -83.57),
+        glm::vec3(45.1, -1.5F, -76.59),
+        glm::vec3(38, -1.5F, -69.61),
+        glm::vec3(30.9, -1.5F, -62.63),
+        glm::vec3(23.8, -1.5F, -55.65),
+        glm::vec3(16.7, -1.5F, -48.67),
+        glm::vec3(9.6, -1.5F, -41.69),
+        glm::vec3(4.43, -1.5F, -32.9),
+        glm::vec3(3.04, -1.5F, -23.05),
+        glm::vec3(2.95, -1.5F, -13),
+        glm::vec3(2.86, -1.5F, -2.95),
+        glm::vec3(2.77, -1.5F, 7.1),
+        glm::vec3(2.68, -1.5F, 17.15),
+        glm::vec3(2.59, -1.5F, 27.2),
+        glm::vec3(2.5, -1.5F, 37.25),
+        glm::vec3(2.41, -1.5F, 47.3),
+        glm::vec3(2.32, -1.5F, 57.35),
+        glm::vec3(2.23, -1.5F, 67.4),
+        glm::vec3(2.14, -1.5F, 77.45),
+        glm::vec3(2.05, -1.5F, 87.5),
+        glm::vec3(1.96, -1.5F, 97.55),
+        glm::vec3(1.87, -1.5F, 107.6),
+        glm::vec3(1.78, -1.5F, 117.65),
+        glm::vec3(1.69, -1.5F, 127.7),
+        glm::vec3(1.6, -1.5F, 137.75),
+        glm::vec3(1.51, -1.5F, 147.8),
+        glm::vec3(1.42, -1.5F, 157.85),
+        glm::vec3(1.33, -1.5F, 167.9),
+        glm::vec3(1.24, -1.5F, 177.95),
+        glm::vec3(1.15, -1.5F, 188),
+        glm::vec3(1.06, -1.5F, 198.05),
+    };
+    return railPositions;
+}
+
 float blendFactor = 0;
 float ambientFactor = 0.9;
 
 int main(int argc, char** argv)
 {
+    srand(12345);
+
     std::string strFullExeFileName = argv[0];
     std::string strExePath;
     const size_t last_slash_idx = strFullExeFileName.rfind('\\');
@@ -475,7 +558,7 @@ int main(int argc, char** argv)
     Model railSwitchRight("Assets\\Models\\tracks\\RailSwitchRight.obj");
     Model railTurnLeft("Assets\\Models\\tracks\\RailTurnLeft.obj");
     Model railTurnRight("Assets\\Models\\tracks\\RailTurnRight.obj");
-
+    Model treeModel("Assets\\Models\\tree\\Tree.obj");
 
     MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(-1.0f, -1.55f, 20.0f));
     trainStationObject.SetRotation(90);
@@ -498,6 +581,13 @@ int main(int argc, char** argv)
     // run the day night thread
     std::thread dayNightThread(process_day_night);
 
+    int numberOfTrees = 100;
+    float xMin = -200.0f, xMax = 200.0f;
+    float zMin = -200.0f, zMax = 200.0f;
+    float yLevel = -1.75f;
+    float minDistanceFromRails = 10.0f;
+    std::vector<glm::vec3> railPositions = getRailPositions();
+    generateTreePositions(treePositions, numberOfTrees, xMin, xMax, zMin, zMax, yLevel, railPositions, minDistanceFromRails);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -571,13 +661,17 @@ int main(int argc, char** argv)
         renderModel(shadowMappingDepthShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
 
         float mountainRotation = 0.0f;
-
+        float treeRotation = 0.0f;
 
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
             renderModel(shadowMappingDepthShader, mountainModel, mountainsPositions[i], mountainRotation, mountainsScales[i] * mountainScale);
         }
 
+        for (int i = 0; i < treePositions.size(); i++)
+        {
+            renderModel(shadowMappingDepthShader, treeModel, treePositions[i], treeRotation, treeScale);
+        }
 
         glCullFace(GL_BACK);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -608,6 +702,11 @@ int main(int argc, char** argv)
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
             renderModel(*ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i] * mountainScale);
+        }
+
+        for (int i = 0; i < treePositions.size(); i++)
+        {
+            renderModel(*ModelShader, treeModel, treePositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), treeRotation, treeScale);
         }
 
         for (auto rail : rails)
