@@ -165,7 +165,6 @@ unsigned int skyboxIndices[] =
 
 Model trainModel;
 Model controlPanel;
-Shader* ModelShader;
 
 MoveableObject trainVehicle;
 MoveableObject controlPanelObject;
@@ -331,9 +330,7 @@ int main(int argc, char** argv)
     Shader shadowMappingDepthShader("ShadowMappingDepth.vs", "ShadowMappingDepth.fs");
     Shader skyboxShader("skybox.vs", "skybox.fs");
     Shader textShader("text.vs", "text.fs");
-
-    // Initialize ModelShader
-    ModelShader = new Shader("ModelShader.vs", "ModelShader.fs");
+    Shader ModelShader("ModelShader.vs", "ModelShader.fs");
 
     // load textures
     // -------------
@@ -601,33 +598,33 @@ int main(int argc, char** argv)
         glDisable(GL_CULL_FACE);
         renderScene(shadowMappingShader);
 
-        renderModel(*ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
-        renderModel(*ModelShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
+        renderModel(ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
+        renderModel(ModelShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
 
-        renderModel(*ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
+        renderModel(ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
-            renderModel(*ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i] * mountainScale);
+            renderModel(ModelShader, mountainModel, mountainsPositions[i] - glm::vec3(0.0f, 0.0f, 0.0f), mountainRotation, mountainsScales[i] * mountainScale);
         }
 
-        for (auto rail : rails)
+        for (const auto& rail : rails)
         {
             switch (rail.type)
             {
             case STRAIGHT:
-                renderModel(*ModelShader, railStraight, rail.position, rail.rotation, railsScale);
+                renderModel(ModelShader, railStraight, rail.position, rail.rotation, railsScale);
                 break;
             case TURN_LEFT:
-                renderModel(*ModelShader, railTurnLeft, rail.position, rail.rotation, railsScale);
+                renderModel(ModelShader, railTurnLeft, rail.position, rail.rotation, railsScale);
                 break;
             case TURN_RIGHT:
-                renderModel(*ModelShader, railTurnRight, rail.position, rail.rotation, railsScale);
+                renderModel(ModelShader, railTurnRight, rail.position, rail.rotation, railsScale);
                 break;
             case SWITCH_LEFT:
-                renderModel(*ModelShader, railSwitchLeft, rail.position, rail.rotation, railsScale);
+                renderModel(ModelShader, railSwitchLeft, rail.position, rail.rotation, railsScale);
                 break;
             case SWITCH_RIGHT:
-                renderModel(*ModelShader, railSwitchRight, rail.position, rail.rotation, railsScale);
+                renderModel(ModelShader, railSwitchRight, rail.position, rail.rotation, railsScale);
                 break;
             }
         }
@@ -638,10 +635,10 @@ int main(int argc, char** argv)
         glm::vec3 lightDir = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)); // Example direction
         glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f); // Example color (rust)
 
-        ModelShader->Use();
-        ModelShader->SetVec3("lightColor", lightColor);
-        ModelShader->SetVec3("lightDir", lightDir);
-        ModelShader->SetVec3("objectColor", objectColor);
+        ModelShader.Use();
+        ModelShader.SetVec3("lightColor", lightColor);
+        ModelShader.SetVec3("lightDir", lightDir);
+        ModelShader.SetVec3("objectColor", objectColor);
 
         glDepthFunc(GL_LEQUAL);
         glDepthMask(GL_FALSE);
@@ -677,7 +674,6 @@ int main(int argc, char** argv)
     gameRunning = false;
     dayNightThread.join();
     delete pCamera;
-    delete ModelShader;
     glfwTerminate();
     return 0;
 }
