@@ -58,15 +58,16 @@ struct rail {
 };
 
 // The amount of ms between light changes
-const unsigned int DAY_NIGHT_CYCLE_SPEED_MS = 20; // lower = faster
+const unsigned int DAY_NIGHT_CYCLE_SPEED_MS = 25; // lower = faster
 const float TRAIN_SPEED = 4.0f;
 const float CAMERA_SPEED = 5.0f;
 
 glm::vec3 trainScale = glm::vec3(1.0f);
-glm::vec3 mountainScale = glm::vec3(.7f);
+glm::vec3 mountainScale = glm::vec3(0.7f);
 glm::vec3 railsScale = glm::vec3(0.5f);
 glm::vec3 controlPanelScale = glm::vec3(0.01f);
 glm::vec3 treeScale = glm::vec3(0.5f);
+glm::vec3 entryScale = glm::vec3(0.006f);
 
 Camera* pCamera = nullptr;
 
@@ -501,7 +502,7 @@ int main(int argc, char** argv)
 
     currentObject = &trainVehicle;
 
-    controlPanel = Model("Assets\\Models\\ControlPanel\\10472_LED_Control_Panel_v1_max2010_iteration-2.obj");
+    controlPanel = Model("Assets\\Models\\ControlPanel\\ControlPanel.obj");
     controlPanelObject = MoveableObject(controlPanel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(123, 3.5f, -190.0f));
     controlPanelObject.SetRotation(180);
 
@@ -513,9 +514,12 @@ int main(int argc, char** argv)
     Model railTurnLeft("Assets\\Models\\tracks\\RailTurnLeft.obj");
     Model railTurnRight("Assets\\Models\\tracks\\RailTurnRight.obj");
     Model treeModel("Assets\\Models\\tree\\Tree.obj");
+	Model brasovEntry("Assets\\Models\\brasov\\brasov.obj");
 
     MoveableObject trainStationObject(trainStation, SCR_WIDTH, SCR_HEIGHT, glm::vec3(-1.0f, -1.55f, 20.0f));
+	MoveableObject brasovEntryObject(brasovEntry, SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, -1.55f, 0));
     trainStationObject.SetRotation(90);
+	brasovEntryObject.SetRotation(180);
 
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 0, -20));
     //pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(trainVehicle.GetPosition().x, trainVehicle.GetPosition().y + 2.4f, trainVehicle.GetPosition().z));
@@ -613,7 +617,8 @@ int main(int argc, char** argv)
 
         float controlPanelRotation = 179.5f;
         renderModel(shadowMappingDepthShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
-
+		
+        renderModel(shadowMappingDepthShader, brasovEntryObject.GetVehicleModel(), brasovEntryObject.GetPosition(), brasovEntryObject.GetRotation(), entryScale);
         float mountainRotation = 0.0f;
         float treeRotation = 0.0f;
 
@@ -651,7 +656,7 @@ int main(int argc, char** argv)
 
         renderModel(ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
         renderModel(ModelShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
-
+        renderModel(ModelShader, brasovEntryObject.GetVehicleModel(), brasovEntryObject.GetPosition(), brasovEntryObject.GetRotation(), entryScale);
         renderModel(ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
         for (int i = 0; i < mountainsPositions.size(); i++)
         {
@@ -968,7 +973,7 @@ void Update()
         else
         {
             pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.5, 3));
-            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.2f, 3.6));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.2f, 3.25));
         }
 
         float trainYaw = trainVehicle.GetRotation();

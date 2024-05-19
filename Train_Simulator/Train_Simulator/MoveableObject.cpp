@@ -132,26 +132,10 @@ bool MoveableObject::MoveTo(glm::vec3 targetPosition, float speed)
 			glm::vec3 direction = glm::normalize(targetPosition - position);
 			position += direction * speed;
 
-            
 		}
 
         LookAt(targetPosition);
-		
-		// rotate to the target angle
-		//if (rotation != targetRotationAngle)
-		//{
-		//	if (rotation < targetRotationAngle)
-		//	{
-		//		rotation += 10.5f;
-		//		yaw += 10.5f;
-		//	}
-		//	else
-		//	{
-		//		rotation -= 10.5f;
-		//		yaw -= 10.5f;
-		//	}
-		//	UpdateObjectVectors();
-		//}
+	
 		return false;
 	}
 }
