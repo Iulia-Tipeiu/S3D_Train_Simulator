@@ -793,7 +793,6 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-#ifdef _DEBUG
     if (cameraMovementAllowed)
     {
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
@@ -835,7 +834,6 @@ void processInput(GLFWwindow* window)
         cabinView = true;
         cameraMovementAllowed = false;
     }
-#endif // DEBUG
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
