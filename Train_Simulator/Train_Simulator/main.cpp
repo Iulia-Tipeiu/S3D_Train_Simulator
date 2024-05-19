@@ -63,6 +63,8 @@ const float TRAIN_SPEED = 4.0f;
 const float CAMERA_SPEED = 5.0f;
 
 glm::vec3 trainScale = glm::vec3(1.0f);
+glm::vec3 wagonScale = glm::vec3(1.0f);
+
 glm::vec3 mountainScale = glm::vec3(0.7f);
 glm::vec3 railsScale = glm::vec3(0.5f);
 glm::vec3 controlPanelScale = glm::vec3(0.01f);
@@ -167,11 +169,12 @@ unsigned int skyboxIndices[] =
     6,2,3
 };
 
-Model trainModel;
+Model trainModel, wagonModel;
 Model controlPanel;
 
 MoveableObject trainVehicle;
 MoveableObject controlPanelObject;
+MoveableObject wagonVehicle;
 
 std::vector<glm::vec3> mountainsPositions =
 {
@@ -496,9 +499,11 @@ int main(int argc, char** argv)
         }
     }
 
-    trainModel = Model("Assets\\Models\\Train\\2te116.obj");
+    trainModel = Model("Assets\\Models\\Train2\\Train2.obj");
+    wagonModel = Model("Assets\\Models\\Wagon\\TrainWagon.obj");
 
-    trainVehicle = MoveableObject(trainModel, SCR_WIDTH, SCR_HEIGHT, glm::vec3(2.5f, -1.47f, 17.15f));
+    trainVehicle = MoveableObject(trainModel, SCR_WIDTH, SCR_HEIGHT, rails[1].position);
+	wagonVehicle = MoveableObject(wagonModel, SCR_WIDTH, SCR_HEIGHT, rails[0].position);
 
     currentObject = &trainVehicle;
 
@@ -532,7 +537,7 @@ int main(int argc, char** argv)
 
     // start in fullscreen
 
-    //glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+   // glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 
     Start();
 
@@ -614,6 +619,7 @@ int main(int argc, char** argv)
         float trainRotation = -0.5f;
 
         renderModel(shadowMappingDepthShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
+        renderModel(shadowMappingDepthShader, wagonVehicle.GetVehicleModel(), wagonVehicle.GetPosition(), wagonVehicle.GetRotation(), wagonScale);
 
         float controlPanelRotation = 179.5f;
         renderModel(shadowMappingDepthShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
@@ -655,6 +661,8 @@ int main(int argc, char** argv)
         renderScene(shadowMappingShader);
 
         renderModel(ModelShader, trainVehicle.GetVehicleModel(), trainVehicle.GetPosition(), trainVehicle.GetRotation(), trainScale);
+        renderModel(ModelShader, wagonVehicle.GetVehicleModel(), wagonVehicle.GetPosition(), wagonVehicle.GetRotation(), wagonScale);
+
         renderModel(ModelShader, controlPanel, controlPanelObject.GetPosition(), controlPanelObject.GetRotation(), controlPanelScale);
         renderModel(ModelShader, brasovEntryObject.GetVehicleModel(), brasovEntryObject.GetPosition(), brasovEntryObject.GetRotation(), entryScale);
         renderModel(ModelShader, trainStation, trainStationObject.GetPosition(), trainStationObject.GetRotation(), glm::vec3(.0025f));
@@ -916,7 +924,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yOffset)
 void Start()
 {
     pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 5, 0));
-    trainVehicle.SetPosition(rails[0].position);
+    trainVehicle.SetPosition(rails[1].position);
+    wagonVehicle.SetPosition(rails[0].position);
     controlPanelObject.SetPosition(rails[0].position);
     pCamera->SetForwardVector(trainVehicle.GetForward());
     pCamera->SetRotation(trainVehicle.GetRotation());
@@ -932,7 +941,6 @@ float stopDuration = 5.0f;
 bool isStopped = false;
 std::chrono::time_point<std::chrono::steady_clock> stopStartTime;
 
-bool returnToStart = false;
 
 /// <summary>
 /// This is called once per frame
@@ -953,13 +961,13 @@ void Update()
     {
         if (railIndex == 4)
         {
-            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1, 1.5, 3));
-            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-1.1, 1.3f, 3.7));
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1, 1.5, 3.5));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-1, 1.3f, 3.9));
         }
         else if (railIndex == 5)
         {
-            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1.7, 1.5, 3));
-            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-2, 1.3f, 3.5));
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-1.7, 1.5, 3.5));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-2, 1.3f, 3.9));
         }
         else if (railIndex == 20)
         {
@@ -970,12 +978,12 @@ void Update()
         else if (railIndex >= 6 && railIndex <= 19)
         {
             pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(-3, 1.5, 3));
-            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-3.5, 1.3f, 3.5));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(-3.43, 1.3f, 3.4));
         }
         else
         {
-            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.5, 3));
-            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.2f, 3.25));
+            pCamera->SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.5, 3.90));
+            controlPanelObject.SetPosition(trainVehicle.GetPosition() + glm::vec3(0, 1.2f, 4.15));
         }
 
         float trainYaw = trainVehicle.GetRotation();
@@ -1009,25 +1017,16 @@ void Update()
             stopStartTime = std::chrono::steady_clock::now();
             std::cout << "Train stopped at index " << 26 << ". Waiting for " << stopDuration << " seconds." << std::endl;
         }
-        if (railIndex == rails.size() - 1)
+        if (railIndex < rails.size() - 1)
         {
-            returnToStart = true;
+            railIndex++;
+			debug("Train reached rail index " + std::to_string(railIndex));
         }
+    }
 
-		else if (railIndex == 0)
-		{
-			returnToStart = false;
-		}
-
-		if (returnToStart)
-		{
-			railIndex--;
-		}
-		else
-		{
-			railIndex++;
-		}
-
+    if (wagonVehicle.MoveTo(rails[railIndex-1].position, deltaTime * TRAIN_SPEED))
+    {
 
     }
+
 }
